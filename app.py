@@ -1092,21 +1092,31 @@ def analyze_pdf_with_modern_ui(uploaded_file, api_key):
                 # Nouvelles métriques avec données
                 render_metrics_cards(df_final)
                 
-                # Graphiques
+                # Graphiques avec gestion alternative
                 col1, col2 = st.columns(2)
                 
                 with col1:
                     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+                    st.markdown('<h3 style="color: #ffffff; margin-bottom: 1rem;">Sector Distribution</h3>', unsafe_allow_html=True)
                     sector_chart = create_sector_chart(df_final)
-                    if sector_chart:
-                        st.plotly_chart(sector_chart, use_container_width=True)
+                    if sector_chart is not None:
+                        if PLOTLY_AVAILABLE and hasattr(sector_chart, 'show'):
+                            st.plotly_chart(sector_chart, use_container_width=True)
+                        elif isinstance(sector_chart, pd.DataFrame):
+                            st.bar_chart(sector_chart.set_index('Category'), color='#38e07b', height=300)
+                    else:
+                        st.markdown('<p style="color: #9ca3af; text-align: center; padding: 2rem;">No sector data available</p>', unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
                 
                 with col2:
                     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+                    st.markdown('<h3 style="color: #ffffff; margin-bottom: 1rem;">Time Series</h3>', unsafe_allow_html=True)
                     time_chart = create_time_series_chart(df_final)
-                    if time_chart:
-                        st.plotly_chart(time_chart, use_container_width=True)
+                    if time_chart is not None:
+                        if PLOTLY_AVAILABLE and hasattr(time_chart, 'show'):
+                            st.plotly_chart(time_chart, use_container_width=True)
+                        elif isinstance(time_chart, pd.DataFrame):
+                            st.line_chart(time_chart, color='#38e07b', height=300)
                     else:
                         st.markdown('<p style="color: #9ca3af; text-align: center; padding: 2rem;">Not enough time series data for chart</p>', unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -1152,5 +1162,6 @@ def analyze_pdf_with_modern_ui(uploaded_file, api_key):
 
 if __name__ == "__main__":
     main()
+
 
 
