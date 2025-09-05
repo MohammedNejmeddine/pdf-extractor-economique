@@ -1,7 +1,7 @@
 streamlit
 PyMuPDF
 pandas
-plotly
 groq
 openpyxl
+
 
