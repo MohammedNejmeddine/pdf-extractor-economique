@@ -1,5 +1,7 @@
 streamlit
-pymupdf
+PyMuPDF
 pandas
-openpyxl
+plotly
 groq
+openpyxl
+
