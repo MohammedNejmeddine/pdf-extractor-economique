@@ -188,33 +188,6 @@ st.markdown("""
         background: #2dd866;
     }
     
-    /* Tableaux personnalisés */
-    .data-table {
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        border-radius: 1rem;
-        overflow: hidden;
-    }
-    
-    .data-table th {
-        background: var(--bg-tertiary);
-        color: var(--text-secondary);
-        padding: 1rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-    }
-    
-    .data-table td {
-        padding: 1rem;
-        border-top: 1px solid var(--border-color);
-        color: var(--text-secondary);
-    }
-    
-    .data-table tr:hover {
-        background: rgba(55, 65, 81, 0.5);
-    }
-    
     /* Sections */
     .section-title {
         color: var(--text-primary);
@@ -250,21 +223,6 @@ st.markdown("""
         gap: 0.5rem;
     }
     
-    /* Progress bar personnalisée */
-    .custom-progress {
-        background: var(--bg-tertiary);
-        border-radius: 0.5rem;
-        height: 0.5rem;
-        overflow: hidden;
-        margin: 1rem 0;
-    }
-    
-    .custom-progress-bar {
-        background: var(--primary-color);
-        height: 100%;
-        transition: width 0.3s ease;
-    }
-    
     /* Masquer les éléments Streamlit par défaut */
     .stDeployButton {display: none;}
     #MainMenu {visibility: hidden;}
@@ -275,6 +233,7 @@ st.markdown("""
     .stSelectbox > div > div {
         background-color: var(--bg-secondary);
         border-color: var(--border-color);
+        color: var(--text-primary);
     }
     
     .stTextInput > div > div > input {
@@ -284,16 +243,61 @@ st.markdown("""
     }
     
     .stButton > button {
-        background-color: var(--primary-color);
-        color: var(--bg-primary);
-        border: none;
-        border-radius: 2rem;
-        font-weight: 700;
-        padding: 0.75rem 2rem;
+        background-color: var(--primary-color) !important;
+        color: var(--bg-primary) !important;
+        border: none !important;
+        border-radius: 2rem !important;
+        font-weight: 700 !important;
+        padding: 0.75rem 2rem !important;
     }
     
     .stButton > button:hover {
-        background-color: #2dd866;
+        background-color: #2dd866 !important;
+    }
+    
+    .stDataFrame {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+    }
+
+    /* Table styling */
+    .styled-table {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        overflow: hidden;
+        width: 100%;
+        margin: 1rem 0;
+    }
+    
+    .styled-table th {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .styled-table td {
+        color: var(--text-secondary);
+        padding: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .styled-table tbody tr:hover {
+        background: rgba(55, 65, 81, 0.5);
+    }
+    
+    .chart-container {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin: 1rem 0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -752,41 +756,401 @@ def create_sector_chart(df):
             secteur_counts['Inflation'] = secteur_counts.get('Inflation', 0) + 1
         elif 'taux' in secteur.lower():
             secteur_counts['Interest Rates'] = secteur_counts.get('Interest Rates', 0) + 1
-        elif 'export' in secteur.lower() or 'import' in secteur.lower():
+        elif any(word in secteur.lower() for word in ['export', 'import', 'commerce']):
             secteur_counts['Trade'] = secteur_counts.get('Trade', 0) + 1
-        elif 'indice' in secteur.lower() or 'bourse' in secteur.lower():
-            secteur_counts['Finance'] = secteur_counts.get('Finance', 0) + 1
-        elif any(sect in secteur.lower() for sect in ['agriculture', 'industrie', 'service']):
-            secteur_counts['Sectors'] = secteur_counts.get('Sectors', 0) + 1
+        elif any(word in secteur.lower() for word in ['indice', 'bourse', 'financier']):
+            secteur_counts['Financial Markets'] = secteur_counts.get('Financial Markets', 0) + 1
+        elif any(word in secteur.lower() for word in ['agriculture', 'industrie', 'service', 'manufacture']):
+            secteur_counts['Economic Sectors'] = secteur_counts.get('Economic Sectors', 0) + 1
         else:
             secteur_counts['Others'] = secteur_counts.get('Others', 0) + 1
     
-    if secteur_counts:
-        fig = px.bar(
+    if not secteur_counts:
+        return None
+    
+    # Créer le graphique en barres avec Plotly
+    fig = go.Figure(data=[
+        go.Bar(
             x=list(secteur_counts.keys()),
             y=list(secteur_counts.values()),
-            title="Distribution by Economic Category",
-            color_discrete_sequence=["#38e07b"]
+            marker_color='#38e07b',
+            text=list(secteur_counts.values()),
+            textposition='auto',
+        )
+    ])
+    
+    fig.update_layout(
+        title="Distribution of Economic Indicators by Category",
+        title_font_color='#ffffff',
+        title_font_size=16,
+        xaxis_title="Categories",
+        yaxis_title="Number of Indicators",
+        xaxis_title_font_color='#9ca3af',
+        yaxis_title_font_color='#9ca3af',
+        xaxis_tickfont_color='#9ca3af',
+        yaxis_tickfont_color='#9ca3af',
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        showlegend=False,
+        margin=dict(l=20, r=20, t=40, b=20),
+        height=300
+    )
+    
+    fig.update_xaxes(showgrid=False, zeroline=False)
+    fig.update_yaxes(showgrid=True, gridcolor='#374151', zeroline=False)
+    
+    return fig
+
+def create_time_series_chart(df):
+    """Crée un graphique temporel des indicateurs"""
+    if df is None or df.empty:
+        return None
+    
+    # Traiter les données temporelles
+    df_time = df.copy()
+    df_time['Valeur_Numérique'] = df_time['Valeur'].str.extract(r'(-?\d+\.?\d*)').astype(float, errors='ignore')
+    
+    # Filtrer les valeurs numériques valides
+    df_time = df_time.dropna(subset=['Valeur_Numérique'])
+    
+    if df_time.empty:
+        return None
+    
+    # Grouper par période
+    time_data = df_time.groupby('Période')['Valeur_Numérique'].mean().reset_index()
+    
+    if len(time_data) < 2:
+        return None
+    
+    # Créer le graphique linéaire
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scatter(
+        x=time_data['Période'],
+        y=time_data['Valeur_Numérique'],
+        mode='lines+markers',
+        line=dict(color='#38e07b', width=3),
+        marker=dict(size=8, color='#38e07b'),
+        fill='tonexty',
+        fillcolor='rgba(56, 224, 123, 0.1)',
+        name='Average Economic Growth'
+    ))
+    
+    fig.update_layout(
+        title="Economic Indicators Over Time",
+        title_font_color='#ffffff',
+        title_font_size=16,
+        xaxis_title="Period",
+        yaxis_title="Average Value (%)",
+        xaxis_title_font_color='#9ca3af',
+        yaxis_title_font_color='#9ca3af',
+        xaxis_tickfont_color='#9ca3af',
+        yaxis_tickfont_color='#9ca3af',
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        showlegend=False,
+        margin=dict(l=20, r=20, t=40, b=20),
+        height=300
+    )
+    
+    fig.update_xaxes(showgrid=False, zeroline=False)
+    fig.update_yaxes(showgrid=True, gridcolor='#374151', zeroline=False)
+    
+    return fig
+
+def render_data_table(df):
+    """Affiche le tableau de données avec style moderne"""
+    if df is None or df.empty:
+        return
+    
+    # Limiter à 10 lignes pour l'affichage
+    df_display = df.head(10)
+    
+    # Créer le HTML du tableau
+    table_html = """
+    <div class="styled-table">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Sector/Indicator</th>
+                    <th>Value</th>
+                    <th>Period</th>
+                    <th>Change</th>
+                </tr>
+            </thead>
+            <tbody>
+    """
+    
+    for idx, row in df_display.iterrows():
+        # Déterminer la couleur du changement
+        valeur = row['Valeur']
+        if '%' in valeur and valeur.replace('%', '').replace('+', '').replace('-', '').replace(',', '.').replace(' ', '').isdigit():
+            num_val = float(valeur.replace('%', '').replace('+', '').replace('-', '').replace(',', '.'))
+            change_class = "positive" if '+' in valeur or num_val > 0 else "negative"
+            change_symbol = "↗" if '+' in valeur or num_val > 0 else "↘"
+        else:
+            change_class = ""
+            change_symbol = "—"
+        
+        table_html += f"""
+                <tr>
+                    <td>2024-01-15</td>
+                    <td style="color: #ffffff; font-weight: 500;">{row['Secteur/Indicateur']}</td>
+                    <td style="color: #ffffff;">{row['Valeur']}</td>
+                    <td>{row['Période']}</td>
+                    <td style="color: {'#38e07b' if change_class == 'positive' else '#ef4444' if change_class == 'negative' else '#9ca3af'};">
+                        {change_symbol} {row['Valeur'] if change_class else '—'}
+                    </td>
+                </tr>
+        """
+    
+    table_html += """
+            </tbody>
+        </table>
+    </div>
+    """
+    
+    st.markdown(table_html, unsafe_allow_html=True)
+    
+    if len(df) > 10:
+        st.markdown(f"<p style='color: #9ca3af; font-size: 0.875rem; margin-top: 1rem;'>Showing 10 of {len(df)} total indicators. Download the complete dataset for full results.</p>", unsafe_allow_html=True)
+
+def render_upload_section():
+    """Affiche la section d'upload avec style moderne"""
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        st.markdown("""
+        <div style="margin-bottom: 1.5rem;">
+            <label style="color: #ffffff; font-weight: 600; margin-bottom: 0.5rem; display: block;">API Key</label>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        default_api_key = get_api_key()
+        api_key = st.text_input(
+            "",
+            value=default_api_key,
+            type="password",
+            placeholder="Enter your Groq API key (gsk_...)",
+            label_visibility="collapsed"
         )
         
-        fig.update_layout(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font_color='white',
-            title_font_size=16,
-            xaxis=dict(gridcolor='#4b5563'),
-            yaxis=dict(gridcolor='#4b5563')
+        if api_key:
+            success, message = test_api_groq(api_key)
+            if success:
+                st.markdown('<div class="status-success">✓ API Connected</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="status-error">✗ Connection Failed</div>', unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div style="margin-top: 2rem; margin-bottom: 1.5rem;">
+            <label style="color: #ffffff; font-weight: 600; margin-bottom: 0.5rem; display: block;">Upload PDF</label>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        uploaded_file = st.file_uploader(
+            "",
+            type="pdf",
+            label_visibility="collapsed"
         )
         
-        return fig
-    return None
+        if uploaded_file:
+            file_size = len(uploaded_file.getvalue())
+            st.markdown(f"""
+            <div class="status-success" style="margin-top: 1rem;">
+                ✓ {uploaded_file.name} uploaded ({file_size:,} bytes)
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="metric-card" style="height: 100%;">
+            <h3>Analysis Summary</h3>
+            <p style="color: #9ca3af; font-size: 0.875rem; line-height: 1.5;">
+                Upload your economic PDF document to automatically extract key indicators. 
+                Our AI will analyze the content and present structured data with visualizations.
+            </p>
+            <div style="margin-top: 2rem;">
+                <p style="color: #38e07b; font-size: 0.875rem; font-weight: 600;">✓ GDP and Growth Indicators</p>
+                <p style="color: #38e07b; font-size: 0.875rem; font-weight: 600;">✓ Inflation and Price Data</p>
+                <p style="color: #38e07b; font-size: 0.875rem; font-weight: 600;">✓ Trade and Market Metrics</p>
+                <p style="color: #38e07b; font-size: 0.875rem; font-weight: 600;">✓ Sector Performance</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Bouton d'analyse
+    analyze_button = st.button(
+        "🔍 Analyze PDF",
+        disabled=not uploaded_file or not api_key,
+        use_container_width=True
+    )
+    
+    return api_key, uploaded_file, analyze_button
 
 def main():
-    # Rendu du header
+    """Fonction principale de l'application"""
+    
+    # Affichage du header
     render_header()
     
     # Titre principal
-    st.markdown('<h1 class="section-title">Economic Data Analysis</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="section
+    st.markdown("""
+    <h1 class="section-title">Economic Data Analysis</h1>
+    <p class="section-subtitle">
+        Explore detailed insights from extracted economic data. Upload a PDF to get started with AI-powered analysis.
+    </p>
+    """, unsafe_allow_html=True)
+    
+    # Section des métriques (vide au démarrage)
+    st.markdown('<h2 class="section-title" style="font-size: 1.25rem;">Data Summary</h2>', unsafe_allow_html=True)
+    render_metrics_cards()
+    
+    # Section d'upload et configuration
+    st.markdown('<h2 class="section-title" style="font-size: 1.25rem;">Configuration</h2>', unsafe_allow_html=True)
+    api_key, uploaded_file, analyze_button = render_upload_section()
+    
+    # Traitement et analyse
+    if analyze_button and uploaded_file and api_key:
+        analyze_pdf_with_modern_ui(uploaded_file, api_key)
+
+def analyze_pdf_with_modern_ui(uploaded_file, api_key):
+    """Fonction d'analyse avec interface moderne"""
+    
+    # Test préliminaire de l'API
+    success, message = test_api_groq(api_key)
+    if not success:
+        st.markdown(f'<div class="status-error">{message}</div>', unsafe_allow_html=True)
+        return
+    
+    # Initialisation
+    try:
+        extractor = PDFEconomicExtractor(api_key)
+    except Exception as e:
+        st.markdown(f'<div class="status-error">Failed to initialize: {str(e)}</div>', unsafe_allow_html=True)
+        return
+    
+    # Barre de progression moderne
+    progress_container = st.empty()
+    status_container = st.empty()
+    
+    try:
+        # Extraction du texte
+        status_container.markdown('<div class="status-warning">📖 Extracting text from PDF...</div>', unsafe_allow_html=True)
+        progress_container.progress(15)
+        
+        pdf_bytes = uploaded_file.getvalue()
+        texte_brut = extractor.extract_text_from_pdf(pdf_bytes)
+        
+        if not texte_brut:
+            st.markdown('<div class="status-error">❌ Could not extract text from PDF</div>', unsafe_allow_html=True)
+            return
+        
+        # Nettoyage
+        status_container.markdown('<div class="status-warning">🧹 Processing and cleaning text...</div>', unsafe_allow_html=True)
+        progress_container.progress(25)
+        
+        texte_propre = extractor.clean_text(texte_brut)
+        blocs = extractor.decouper_en_blocs(texte_propre)
+        
+        # Analyse IA
+        status_container.markdown('<div class="status-warning">🤖 AI Analysis in progress...</div>', unsafe_allow_html=True)
+        progress_container.progress(35)
+        
+        total_indicators = 0
+        for i, bloc in enumerate(blocs):
+            reponse_llama = extractor.callback_llama_groq(bloc)
+            
+            if reponse_llama:
+                donnees_structurees = extractor.analyser_texte_economique(reponse_llama)
+                extractor.tableau_final.extend(donnees_structurees)
+                total_indicators += len(donnees_structurees)
+            
+            progress = 35 + (50 * (i + 1) / len(blocs))
+            progress_container.progress(int(progress))
+        
+        # Finalisation
+        status_container.markdown('<div class="status-warning">🔍 Filtering and validating data...</div>', unsafe_allow_html=True)
+        progress_container.progress(90)
+        
+        if extractor.tableau_final:
+            donnees_filtrees = extractor.filtrer_donnees_qualite(extractor.tableau_final)
+            
+            if donnees_filtrees:
+                df_final = pd.DataFrame(donnees_filtrees)
+                df_final = df_final.drop_duplicates(subset=['Secteur/Indicateur', 'Valeur'])
+                df_final = df_final.sort_values(['Secteur/Indicateur', 'Période']).reset_index(drop=True)
+                
+                # Finalisation
+                progress_container.progress(100)
+                status_container.markdown('<div class="status-success">✅ Analysis completed successfully!</div>', unsafe_allow_html=True)
+                
+                # Affichage des résultats avec nouvelle UI
+                st.markdown('<h2 class="section-title">Analysis Results</h2>', unsafe_allow_html=True)
+                
+                # Nouvelles métriques avec données
+                render_metrics_cards(df_final)
+                
+                # Graphiques
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+                    sector_chart = create_sector_chart(df_final)
+                    if sector_chart:
+                        st.plotly_chart(sector_chart, use_container_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                with col2:
+                    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+                    time_chart = create_time_series_chart(df_final)
+                    if time_chart:
+                        st.plotly_chart(time_chart, use_container_width=True)
+                    else:
+                        st.markdown('<p style="color: #9ca3af; text-align: center; padding: 2rem;">Not enough time series data for chart</p>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Tableau de données
+                st.markdown('<h2 class="section-title">Detailed Data Table</h2>', unsafe_allow_html=True)
+                render_data_table(df_final)
+                
+                # Boutons de téléchargement
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    csv_data = df_final.to_csv(index=False, sep=';', encoding='utf-8')
+                    st.download_button(
+                        label="📄 Download CSV",
+                        data=csv_data,
+                        file_name=f"economic_data_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                        mime="text/csv",
+                        use_container_width=True
+                    )
+                
+                with col2:
+                    excel_buffer = BytesIO()
+                    df_final.to_excel(excel_buffer, index=False, engine='openpyxl')
+                    excel_buffer.seek(0)
+                    
+                    st.download_button(
+                        label="📊 Download Excel",
+                        data=excel_buffer,
+                        file_name=f"economic_data_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        use_container_width=True
+                    )
+            
+            else:
+                status_container.markdown('<div class="status-warning">No valid indicators found after quality filtering</div>', unsafe_allow_html=True)
+        
+        else:
+            status_container.markdown('<div class="status-warning">No economic indicators detected in the PDF</div>', unsafe_allow_html=True)
+    
+    except Exception as e:
+        status_container.markdown(f'<div class="status-error">Error during analysis: {str(e)}</div>', unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
 
 
