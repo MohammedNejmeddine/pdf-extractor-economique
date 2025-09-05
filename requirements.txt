@@ -1,7 +1,9 @@
 streamlit
-PyMuPDF
+pymupdf
 pandas
-groq
 openpyxl
+groq
+plotly
+
 
 
